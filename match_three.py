@@ -8,26 +8,32 @@ Created on Sat Sep 28 08:36:06 2019
 import tkinter
 import random
 from collections import defaultdict
+from typing import Tuple, Union
 import numpy as np
+
+Balls_coord = Tuple[np.ndarray, np.ndarray]
 
 class GameStats():
     """Representing global game stats, e.g. score
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self.score = 0
         self.round = 1
 
-    def increment_round(self):
+    def increment_round(self) -> None:
         """Increments round variable by 1
         """
         self.round += 1
 
-    def get_round(self):
+    def get_round(self) -> int:
         """Returns current round value
+
+        Returns:
+            integer: Round number
         """
         return self.round
 
-    def add_score(self, points):
+    def add_score(self, points: int) -> None:
         """Increment score variable by given value
 
         Args:
@@ -35,16 +41,23 @@ class GameStats():
         """
         self.score += points
 
-    def get_score(self):
+    def get_score(self) -> int:
         """Returns current score value
+
+        Returns:
+            integer: Score casted to int (otherwise it would be float)
         """
         return int(self.score)
 
 class PointContainer():
     """Representing point - crate for two coordinates
     """
-    def __init__(self, x_axis, y_axis):
+    def __init__(self, x_axis: int, y_axis: int) -> None:
         """Initializatioon - filling the crate
+
+        Args:
+            x_axis(int): Zero at upper left corner of window_height
+            y_axis(int): Zero at upper left corner of window_height
         """
         self.x_axis = x_axis
         self.y_axis = y_axis
@@ -61,8 +74,9 @@ class Fields():
                    6: "purple"}
     NO_USED_COLORS = len(USED_COLORS)
 
-    def __init__(self, game_window, x_axis, y_axis,
-                 top_left_point, bottom_right_point):
+    def __init__(self, game_window, x_axis: int, y_axis: int,
+                 top_left_point: PointContainer,
+                 bottom_right_point: PointContainer) -> None:
         """Sets ball parameters and draws in on the game board
 
         Args:
@@ -79,7 +93,7 @@ class Fields():
         self.color = Fields.USED_COLORS[random.randrange(Fields.NO_USED_COLORS)]
         self.create_ball(game_window, top_left_point, bottom_right_point)
 
-    def reset_color(self, game_window):
+    def reset_color(self, game_window: tkinter.Canvas) -> None:
         """Reseting ball color to random color and redrawing it
 
         Args:
@@ -88,7 +102,7 @@ class Fields():
         self.color = Fields.USED_COLORS[random.randrange(Fields.NO_USED_COLORS)]
         self.redraw_color(game_window)
 
-    def redraw_to_yellow_color(self, game_window):
+    def redraw_to_yellow_color(self, game_window: tkinter.Canvas) -> None:
         """Reseting ball color to yellow and redrawing it
 
         Args:
@@ -97,7 +111,7 @@ class Fields():
         self.color = "yellow"
         self.redraw_color(game_window)
 
-    def redraw_color(self, game_window):
+    def redraw_color(self, game_window: tkinter.Canvas) -> None:
         """Redrawing ball with current color
 
         Args:
@@ -105,7 +119,9 @@ class Fields():
         """
         game_window.itemconfig(self.ball, fill=self.color)
 
-    def create_ball(self, game_window, top_left_point, bottom_right_point):
+    def create_ball(self, game_window: tkinter.Canvas,
+                    top_left_point: PointContainer,
+                    bottom_right_point: PointContainer) -> None:
         """Draws ball on the game board
 
         Args:
@@ -122,7 +138,9 @@ class Fields():
             bottom_right_point.y_axis,
             fill=self.color, width=2)
 
-    def create_highlight(self, game_window, top_left_point, bottom_right_point):
+    def create_highlight(self, game_window: tkinter.Canvas,
+                         top_left_point: PointContainer,
+                         bottom_right_point: PointContainer) -> None:
         """Creating highligh around field selected by user
 
         Args:
@@ -139,7 +157,7 @@ class Fields():
             bottom_right_point.y_axis,
             outline="yellow", width=5)
 
-    def destroy_highlight(self, game_window):
+    def destroy_highlight(self, game_window: tkinter.Canvas) -> None:
         """Destroying highligh around field previously selected by user
 
         Args:
@@ -147,7 +165,7 @@ class Fields():
         """
         game_window.delete(self.highlight)
 
-    def is_neighbour(self, another_field):
+    def is_neighbour(self, another_field: "Fields") -> bool:
         """Testing whether filds are neighbours
 
         Args:
@@ -169,7 +187,7 @@ class GameInterface():
     """
     _instance = None
 
-    def _set_interface_params(self, master_window):
+    def _set_interface_params(self, master_window: tkinter.Canvas) -> None:
         """Setting class parameters - de facto replacement for __init__ function
 
         Class is created as singleton, thus __new__ is used and __init__ is
@@ -220,7 +238,7 @@ class GameInterface():
 
         self._cleaning_from_three(initial_cleansing=True)
 
-    def _fill_ball_dict(self):
+    def _fill_ball_dict(self) -> None:
         """Fills dictionary with individual balls
         """
         for line in range(self.no_lines):
@@ -235,7 +253,7 @@ class GameInterface():
                     self.game_window, line, column,
                     left_upper_corner, right_lower_corner)
 
-    def _cleaning_from_three(self, initial_cleansing=False):
+    def _cleaning_from_three(self, initial_cleansing: bool = False) -> None:
         """Goes though game board, finds all large enough groups of one colored
         balls and replaces them (and awards points for it)
 
@@ -252,7 +270,8 @@ class GameInterface():
             self.draw_new_balls(number_of_nonzeros, nonzeros,
                                 initial_cleansing=True)
 
-    def draw_yellow_balls(self, number_of_balls, balls_coordinates):
+    def draw_yellow_balls(self, number_of_balls: int,
+                          balls_coordinates: Balls_coord) -> None:
         """Change color of chosen balls and after a certain time, calls
         function draw_new_balls
 
@@ -273,8 +292,9 @@ class GameInterface():
             time_delay, self.draw_new_balls,
             number_of_balls, balls_coordinates)
 
-    def draw_new_balls(self, number_of_balls, balls_coordinates,
-                       initial_cleansing=False):
+    def draw_new_balls(self, number_of_balls: int,
+                       balls_coordinates: Balls_coord,
+                       initial_cleansing: bool = False) -> None:
         """Resets color of chosen balls and check if 3+ long line of same
         colored balls is created
 
@@ -288,7 +308,7 @@ class GameInterface():
         self._reset_three_balls(number_of_balls, balls_coordinates)
         self._cleaning_from_three(initial_cleansing)
 
-    def get_three_locations(self):
+    def get_three_locations(self) -> Tuple[Balls_coord, int]:
         """Returns coordinates of lines with 3+ same colored balls and how many
         of these balls are
 
@@ -306,7 +326,8 @@ class GameInterface():
         number_of_nonzeros = len(nonzeros[0])
         return (nonzeros, number_of_nonzeros)
 
-    def is_three_created(self, first, second):
+    def is_three_created(self, first: Fields,
+                         second: Fields) -> None:
         """Changes color of two balls and check if line of 3+ is created
 
         first(Fields): Field with first ball
@@ -324,23 +345,28 @@ class GameInterface():
             self.game_window.after(200, self.draw_yellow_balls,
                                    number_of_nonzeros, nonzeros)
 
-    def _update_round(self):
+    def _update_round(self) -> None:
         """Updates round value and update label
         """
         self.game_stat.increment_round()
         self._write_rounds()
 
-    def _update_score(self):
+    def _update_score(self) -> None:
         """Updates score value and score label
         """
         self.game_stat.add_score(self.part_of_three.sum())
         self._write_points()
 
-    def find_left_mouse_click(self, event):
+    def find_left_mouse_click(self, event: tkinter.Event
+                              ) -> Union[None, Tuple[int, int]]:
         """Determines on which ball in game board user clicked
 
         Args:
             event(tkinter.Event): Object with information about user click
+
+        Returns:
+            None or Tuple(int, int): x and y are coordinates of ball \
+            (in game board fields, not in pixels)
         """
         loc_x_axis = event.x
         loc_y_axis = event.y
@@ -366,7 +392,7 @@ class GameInterface():
 
             return (x_field, y_field)
 
-    def left_mouse_click(self, event):
+    def left_mouse_click(self, event: tkinter.Event) -> None:
         """Processing user click
 
         If user click on inteface above game board, destroy ball highlight
@@ -411,21 +437,22 @@ class GameInterface():
                 self.selected_field.destroy_highlight(self.game_window)
                 self.selected_field = None
 
-    def _write_points(self):
+    def _write_points(self) -> None:
         """Updates score label with current score value
         """
         self.game_window.itemconfig(
             self.text_points,
             text=f"Points: {self.game_stat.get_score()}")
 
-    def _write_rounds(self):
+    def _write_rounds(self) -> None:
         """Updates round label with current round value
         """
         self.game_window.itemconfig(
             self.round_counter,
             text=f"Round: {self.game_stat.get_round()}")
 
-    def _reset_three_balls(self, number_of_nonzeros, nonzeros):
+    def _reset_three_balls(self, number_of_nonzeros: int,
+                           nonzeros: Balls_coord) -> None:
         """Randomly resets color of same-colored balls forming cluster during
         initialization
 
@@ -439,13 +466,13 @@ class GameInterface():
             index_y = (nonzeros[1])[index]
             self.ball_dict[index_x][index_y].reset_color(self.game_window)
 
-    def _find_horiz_three_all_lines(self):
+    def _find_horiz_three_all_lines(self) -> None:
         """Looks for clusters of three in every line of game board
         """
         for line_id in range(0, self.no_lines):
             self._is_part_of_horiz_three(line_id)
 
-    def _is_part_of_horiz_three(self, line_id):
+    def _is_part_of_horiz_three(self, line_id: int) -> None:
         """Looks for clusters of three in given line
 
         Args:
@@ -464,17 +491,17 @@ class GameInterface():
             color_second = color_third
             first_two_same_color = (color_first == color_second)
 
-    def _find_vert_three_all_lines(self):
+    def _find_vert_three_all_lines(self) -> None:
         """Looks for clusters of three in every column of game board
         """
         for column_id in range(0, self.no_columns):
             self._is_part_of_vert_three(column_id)
 
-    def _is_part_of_vert_three(self, column_id):
-        """Looks for clusters of three in given line
+    def _is_part_of_vert_three(self, column_id: int) -> None:
+        """Looks for clusters of three in given column
 
         Args:
-            line_id(int): Number identifying searched line
+            column_id(int): Number identifying searched column
         """
         color_first = self.ball_dict[0][column_id].color
         color_second = self.ball_dict[1][column_id].color
@@ -489,14 +516,14 @@ class GameInterface():
             color_second = color_third
             first_two_same_color = (color_first == color_second)
 
-    def find_three(self):
+    def find_three(self) -> None:
         """Looks for clusters of three and writes its finding into part_of_three
         dict
         """
         self._find_horiz_three_all_lines()
         self._find_vert_three_all_lines()
 
-    def _draw_grid_horiz_line(self, horiz_index):
+    def _draw_grid_horiz_line(self, horiz_index: int) -> None:
         """Draws horizontal lines for game board
 
         Args:
@@ -510,7 +537,7 @@ class GameInterface():
             self.height_interface+self.line_height*horiz_index,
             fill="black", width=3)
 
-    def _draw_grid_vert_line(self, vert_index):
+    def _draw_grid_vert_line(self, vert_index: int) -> None:
         """Draws vertical lines for game board
 
         Args:
@@ -524,7 +551,7 @@ class GameInterface():
             self.height_interface+self.height_game_field,
             fill="black", width=3)
 
-    def draw_grid(self):
+    def draw_grid(self) -> None:
         """Draws grid for game board
         """
         for line_index in range(self.no_lines+1):

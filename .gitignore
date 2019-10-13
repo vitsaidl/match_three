@@ -1,0 +1,6 @@
+__pycache__
+.pre-commit-config.yaml
+.pytest_cache
+.mypy_cache
+tests/fields/__pycache__
+tests/gameinterface/__pycache__
